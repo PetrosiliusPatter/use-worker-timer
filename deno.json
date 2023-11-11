@@ -1,0 +1,16 @@
+{
+  "fmt": {
+    "semiColons": false,
+    "lineWidth": 90,
+    "indentWidth": 2
+  },
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["no-explicit-any"]
+    }
+  },
+  "exclude": ["build"]
+}
