@@ -54,7 +54,6 @@
     <li><a href="#usage">Usage</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -65,7 +64,7 @@
 Scheduling events in the browser is a pain. The `setTimeout` and `setInterval` functions
 are not accurate and can be delayed by other tasks running on the main thread. If you
 switch tabs, resize the window, they become even more inaccurate. This is especially
-noticable, if events are scheduled after another, as the delay will accumulate.
+noticable, if events are scheduled to fire in sequence, as the delay will accumulate.
 
 This library uses a web worker to schedule events on a separate thread, allowing for more
 accurate timing. You define a list of checkpoints, and the worker will fire an event
