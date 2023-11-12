@@ -7,12 +7,5 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "preserve"
   },
-  "include": [
-    "vite.config.ts",
-    "src/entry-server.tsx",
-    "src/vite-env.d.ts",
-    "src/App.tsx",
-    "src/styles.ts",
-    "src/utils.ts"
-  ]
+  "include": ["vite.config.ts", "src/**/*"]
 }

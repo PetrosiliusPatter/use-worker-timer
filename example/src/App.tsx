@@ -1,25 +1,49 @@
-import { useCallback, useMemo } from "react"
-import { usePlayback } from "use-worker-timer"
-import { DemoWrapper, ProgressContainer, ProgressSlider } from "./styles"
-import { formatMs } from "./utils"
+import {useCallback, useEffect, useMemo, useState} from 'react'
+import {usePlayback} from 'use-worker-timer'
+import {DemoWrapper, ProgressContainer, ProgressSlider} from './styles'
+import {formatMs} from './utils'
 
-const exampleCheckpoints = [
-  { time: 0, callback: () => console.log("Start") },
-  { time: 5000, callback: () => console.log("5 seconds") },
-  { time: 10000, callback: () => console.log("10 seconds") },
-  { time: 15000, callback: () => console.log("15 seconds (Halftime!)") },
-  { time: 20000, callback: () => console.log("20 seconds") },
-  { time: 25000, callback: () => console.log("25 seconds") },
-  { time: 30000, callback: () => console.log("30 seconds (End)!") },
-]
-const endTime = Math.max(...exampleCheckpoints.map(({ time }) => time))
+import snareSound from './assets/snare.wav'
 
-const reportCheckpoint = (ms: number) => {
-  const checkpoint = exampleCheckpoints.find(({ time }) => time === ms)
-  if (checkpoint) checkpoint.callback()
-}
+const soundSpacing = (60 * 1000) / 160
 
 const App = () => {
+  // ------- Sound -------
+  const [soundEffect, setSoundEffect] = useState<HTMLAudioElement | undefined>(
+    undefined
+  )
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    setSoundEffect(new Audio(snareSound))
+  }, [])
+
+  const checkpoints = useMemo(
+    () =>
+      Array.from({length: 4 * 16}).map((_, i, arr) => ({
+        time: i * soundSpacing, // 160 bpm
+        callback: () => {
+          const isLast = i === arr.length - 1
+          if (isLast) {
+            console.log('Reached the end of the song')
+            return
+          }
+          soundEffect.play()
+        },
+      })),
+    [soundEffect]
+  )
+
+  const endTime = useMemo(
+    () => Math.max(...checkpoints.map(({time}) => time)),
+    [checkpoints]
+  )
+
+  const reportCheckpoint = useCallback(
+    (ms: number) => checkpoints.find(({time}) => time === ms)?.callback(),
+    [checkpoints]
+  )
+
   // ------- Playback Controls -------
   const {
     isReady,
@@ -32,7 +56,7 @@ const App = () => {
     setPlaybackProgress,
   } = usePlayback({
     reportCheckpoint,
-    checkpoints: exampleCheckpoints.map(({ time }) => time),
+    checkpoints: checkpoints.map(({time}) => time),
     estimationUpdateInterval: 100,
   })
 
@@ -47,22 +71,22 @@ const App = () => {
       reported: formatMs(playState?.progress ?? 0),
       estimated: formatMs(estimatedProgress ?? 0),
     }),
-    [estimatedProgress, playState?.progress],
+    [estimatedProgress, playState?.progress]
   )
 
   // ------- Render -------
   return (
     <DemoWrapper>
-      <span>Worker is {isReady ? "" : "not"} ready</span>
+      <span>Worker is {isReady ? '' : 'not'} ready</span>
       <button onClick={play}>play</button>
       <button onClick={pause}>pause</button>
       <button onClick={stop}>stop</button>
       <button onClick={toggleLooping}>
-        Toggle looping (currently {playState?.looping ? "on" : "off"})
+        Toggle looping (currently {playState?.looping ? 'on' : 'off'})
       </button>
       <ProgressContainer>
         <ProgressSlider
-          type="range"
+          type='range'
           min={0}
           max={endTime}
           value={estimatedProgress ?? 0}
