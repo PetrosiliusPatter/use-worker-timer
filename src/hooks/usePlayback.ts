@@ -129,12 +129,11 @@ export const usePlayback = (
   }, [])
   const setLooping = React.useCallback((looping: boolean) => {
     typedWorkerCall(workerRef.current, "setPlayState", { looping })
-    setControlStartTime(Date.now())
   }, [])
   const setPlaybackProgress = React.useCallback((progress: number) => {
     if (!workerRef.current) return
     typedWorkerCall(workerRef.current, "setPlayState", { progress })
-    setControlStartTime(Date.now())
+    setControlStartTime(Date.now() - progress)
   }, [])
 
   return {
