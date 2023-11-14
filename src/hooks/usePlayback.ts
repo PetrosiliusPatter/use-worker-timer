@@ -29,9 +29,10 @@ type Props = {
   estimationUpdateInterval?: number
   reportCheckpoint?: (time: number) => void
   checkpoints: number[]
+  debugLog?: (message: string) => void
 }
 export const usePlayback = (
-  { estimationUpdateInterval, checkpoints, reportCheckpoint }: Props,
+  { estimationUpdateInterval, checkpoints, reportCheckpoint, debugLog }: Props,
 ) => {
   // ------------  State  ------------
   const workerRef = React.useRef<Worker>()
@@ -50,6 +51,8 @@ export const usePlayback = (
     estimationUpdateInterval,
   )
 
+  const [controlStartTime, setControlStartTime] = React.useState<number>(0)
+
   // ------------  Worker  ------------
   React.useEffect(() => {
     const newWorker = new Worker(blobbedWorker)
@@ -64,9 +67,29 @@ export const usePlayback = (
     const onMessage = (event: MessageEvent<BrowserCallData>) => {
       const [eventCall, eventData] = event.data
       switch (eventCall) {
-        case "reachedCheckpoint":
-          reportCheckpoint?.(eventData)
+        case "reachedCheckpoint": {
+          const now = Date.now()
+
+          if (debugLog) {
+            // At what time the main thread expected the checkpoint to be reached
+            const expectedTime = controlStartTime + eventData.time
+            // At what time the worker meant to reach the checkpoint
+            const workerAimedAt = eventData.startTime + eventData.time
+            // How much time the worker was off by
+            const error = now - workerAimedAt
+            // How much time the worker has been off by cumulatively
+            const accError = now - expectedTime
+
+            // error and accError should be equal, as the worker tries to correct itself
+            debugLog(
+              `Reporting checkpoint ${eventData.time}, (error ${error}ms, accumulated error ${accError}ms)`,
+            )
+          }
+
+          const checkpoint = eventData.time
+          reportCheckpoint?.(checkpoint)
           break
+        }
         case "reportPlayState":
           setReportedPlayState({ state: eventData, reportedAt: new Date() })
           break
@@ -77,7 +100,7 @@ export const usePlayback = (
     return () => {
       workerRef.current?.removeEventListener("message", onMessage)
     }
-  }, [reportCheckpoint])
+  }, [reportCheckpoint, controlStartTime])
 
   React.useEffect(() => {
     if (!workerRef.current) return
@@ -86,23 +109,36 @@ export const usePlayback = (
 
   // ------------  Controls  ------------
   const play = React.useCallback(() => {
-    typedWorkerCall(workerRef.current, "setPlayState", { playing: true })
+    const newProgress = reportedPlayState?.state.progress ?? 0
+    typedWorkerCall(workerRef.current, "setPlayState", {
+      playing: true,
+      progress: newProgress,
+    })
+    setControlStartTime(Date.now() - newProgress)
   }, [])
   const pause = React.useCallback(() => {
-    typedWorkerCall(workerRef.current, "setPlayState", { playing: false })
+    const newProgress = reportedPlayState?.state.progress ?? 0
+    typedWorkerCall(workerRef.current, "setPlayState", {
+      playing: false,
+      progress: newProgress,
+    })
+    setControlStartTime(Date.now() - newProgress)
   }, [])
   const stop = React.useCallback(() => {
     typedWorkerCall(workerRef.current, "setPlayState", {
       playing: false,
       progress: 0,
     })
+    setControlStartTime(Date.now())
   }, [])
   const setLooping = React.useCallback((looping: boolean) => {
     typedWorkerCall(workerRef.current, "setPlayState", { looping })
+    setControlStartTime(Date.now())
   }, [])
   const setPlaybackProgress = React.useCallback((progress: number) => {
     if (!workerRef.current) return
     typedWorkerCall(workerRef.current, "setPlayState", { progress })
+    setControlStartTime(Date.now())
   }, [])
 
   return {

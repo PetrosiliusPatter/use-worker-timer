@@ -29,7 +29,10 @@ export type WorkerCallData = Values<
 
 // ------------  Browser Call Types  ------------
 export type BrowserCallTypings = {
-  "reachedCheckpoint": number
+  "reachedCheckpoint": {
+    time: number
+    startTime: number
+  }
   "reportPlayState": PlayState
 }
 export type BrowserCall = keyof BrowserCallTypings

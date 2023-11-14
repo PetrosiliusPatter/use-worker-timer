@@ -32,32 +32,31 @@ export const playbackWorker = () => {
     if (timeoutId !== undefined) clearTimeout(timeoutId)
     if (!currentPlayState.playing) return
 
-    setPlayState({ progress: startTime ? Date.now() - startTime : 0 })
-
     const nextTime = timesToReport.find((time) =>
-      time >= currentPlayState.progress && time !== lastReportedProgress
+      time >= (startTime ? Date.now() - startTime : 0) && time !== lastReportedProgress
     )
     if (nextTime === undefined) {
       if (currentPlayState.looping) {
-        setPlayState({ progress: 0 })
+        setPlayState({ progress: 0 }, true)
         createNextTimeout()
       } else {
-        setPlayState({ progress: 0, playing: false })
+        setPlayState({ progress: 0, playing: false }, true)
       }
       return
     }
 
-    const timeUntilNext = nextTime - currentPlayState.progress
+    const newProgress = startTime ? Date.now() - startTime : 0
+    setPlayState({ progress: newProgress }, false)
 
     timeoutId = setTimeout(() => {
       lastReportedProgress = nextTime
-      typedBrowserCall("reachedCheckpoint", nextTime)
-      setPlayState({ progress: nextTime })
+      typedBrowserCall("reachedCheckpoint", { time: nextTime, startTime: startTime ?? 0 })
+      setPlayState({ progress: nextTime }, false)
       createNextTimeout()
-    }, timeUntilNext)
+    }, nextTime - newProgress)
   }
 
-  const setPlayState = (newState: Partial<PlayState>) => {
+  const setPlayState = (newState: Partial<PlayState>, recalcStart = true) => {
     let newProgress = newState.progress
     if (newProgress === undefined && startTime !== undefined) {
       newProgress = currentPlayState.playing
@@ -71,7 +70,10 @@ export const playbackWorker = () => {
       progress: newProgress ?? 0,
     }
 
-    startTime = Date.now() - currentPlayState.progress
+    if (recalcStart) {
+      console.log("Recalculating start time")
+      startTime = Date.now() - currentPlayState.progress
+    }
     typedBrowserCall("reportPlayState", currentPlayState)
   }
 

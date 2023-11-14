@@ -14,7 +14,6 @@ const App = () => {
   )
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
     setSoundEffect(new Audio('./snare.wav'))
   }, [])
 
@@ -58,6 +57,7 @@ const App = () => {
     reportCheckpoint,
     checkpoints: checkpoints.map(({time}) => time),
     estimationUpdateInterval: 100,
+    debugLog: console.log,
   })
 
   const toggleLooping = useCallback(() => {
