@@ -1,11 +1,11 @@
+'use client'
 import {useCallback, useEffect, useMemo, useState} from 'react'
+
 import {usePlayback} from 'use-worker-timer'
 import {DemoWrapper, ProgressContainer, ProgressSlider} from './styles'
 import {formatMs} from './utils'
 
-import snareSound from './assets/snare.wav'
-
-const soundSpacing = (60 * 1000) / 160
+const BPM = (60 * 1000) / 160
 
 const App = () => {
   // ------- Sound -------
@@ -15,20 +15,20 @@ const App = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    setSoundEffect(new Audio(snareSound))
+    setSoundEffect(new Audio('./snare.wav'))
   }, [])
 
   const checkpoints = useMemo(
     () =>
       Array.from({length: 4 * 16}).map((_, i, arr) => ({
-        time: i * soundSpacing, // 160 bpm
+        time: i * BPM, // 160 bpm
         callback: () => {
           const isLast = i === arr.length - 1
           if (isLast) {
             console.log('Reached the end of the song')
             return
           }
-          soundEffect.play()
+          soundEffect?.play()
         },
       })),
     [soundEffect]

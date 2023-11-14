@@ -27,7 +27,7 @@ const blobbedWorker = URL.createObjectURL(
 
 type Props = {
   estimationUpdateInterval?: number
-  reportCheckpoint: (time: number) => void
+  reportCheckpoint?: (time: number) => void
   checkpoints: number[]
 }
 export const usePlayback = (
@@ -65,7 +65,7 @@ export const usePlayback = (
       const [eventCall, eventData] = event.data
       switch (eventCall) {
         case "reachedCheckpoint":
-          reportCheckpoint(eventData)
+          reportCheckpoint?.(eventData)
           break
         case "reportPlayState":
           setReportedPlayState({ state: eventData, reportedAt: new Date() })
@@ -86,15 +86,12 @@ export const usePlayback = (
 
   // ------------  Controls  ------------
   const play = React.useCallback(() => {
-    if (!workerRef.current) return
     typedWorkerCall(workerRef.current, "setPlayState", { playing: true })
   }, [])
   const pause = React.useCallback(() => {
-    if (!workerRef.current) return
     typedWorkerCall(workerRef.current, "setPlayState", { playing: false })
   }, [])
   const stop = React.useCallback(() => {
-    if (!workerRef.current) return
     typedWorkerCall(workerRef.current, "setPlayState", {
       playing: false,
       progress: 0,
