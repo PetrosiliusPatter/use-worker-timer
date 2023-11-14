@@ -115,21 +115,17 @@ export const usePlayback = (
       progress: newProgress,
     })
     setControlStartTime(Date.now() - newProgress)
-  }, [])
+  }, [reportedPlayState?.state.progress])
   const pause = React.useCallback(() => {
-    const newProgress = reportedPlayState?.state.progress ?? 0
     typedWorkerCall(workerRef.current, "setPlayState", {
       playing: false,
-      progress: newProgress,
     })
-    setControlStartTime(Date.now() - newProgress)
-  }, [])
+  }, [reportedPlayState?.state.progress])
   const stop = React.useCallback(() => {
     typedWorkerCall(workerRef.current, "setPlayState", {
       playing: false,
       progress: 0,
     })
-    setControlStartTime(Date.now())
   }, [])
   const setLooping = React.useCallback((looping: boolean) => {
     typedWorkerCall(workerRef.current, "setPlayState", { looping })

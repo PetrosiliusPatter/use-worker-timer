@@ -5,8 +5,6 @@ import {usePlayback} from 'use-worker-timer'
 import {DemoWrapper, ProgressContainer, ProgressSlider} from './styles'
 import {formatMs} from './utils'
 
-const BPM = (60 * 1000) / 160
-
 const App = () => {
   // ------- Sound -------
   const [soundEffect, setSoundEffect] = useState<HTMLAudioElement | undefined>(
@@ -20,8 +18,8 @@ const App = () => {
   const checkpoints = useMemo(
     () =>
       Array.from({length: 4 * 16}).map((_, i, arr) => ({
-        time: i * BPM, // 160 bpm
-        callback: () => {
+        time: (i * (60 * 1000)) / 60, // 60 bpm
+        callback: (reportedTime: number) => {
           const isLast = i === arr.length - 1
           if (isLast) {
             console.log('Reached the end of the song')
@@ -39,7 +37,7 @@ const App = () => {
   )
 
   const reportCheckpoint = useCallback(
-    (ms: number) => checkpoints.find(({time}) => time === ms)?.callback(),
+    (ms: number) => checkpoints.find(({time}) => time === ms)?.callback(ms),
     [checkpoints]
   )
 

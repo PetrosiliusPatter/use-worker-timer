@@ -71,7 +71,6 @@ export const playbackWorker = () => {
     }
 
     if (recalcStart) {
-      console.log("Recalculating start time")
       startTime = Date.now() - currentPlayState.progress
     }
     typedBrowserCall("reportPlayState", currentPlayState)

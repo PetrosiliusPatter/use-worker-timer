@@ -75,24 +75,17 @@ whenever one is reached.
 This package also offers functions to control the playback of these checkpoints, such as
 playing, pausing, stopping, jumping to a specific checkpoint, and even looping.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+#### Built With
 
-### Built With
-
-- [![Deno][Deno]][Deno-url]
-- [![React][React.js]][React-url]
+[![Deno][Deno]][Deno-url] [![React][React.js]][React-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- GETTING STARTED -->
 
 ## Getting Started
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install
-them.
-
+- React
 - npm or deno
 
 ### Installation
@@ -111,7 +104,76 @@ them.
 
 ## Usage
 
-TODO
+To use this hook, you pass in a list of checkpoints, as ms values, and a callback that is
+called whenever a checkpoint is reached. The hook will return a bunch of functions to
+control the playback, as well as the current state of the playback.
+
+```ts
+// Creates a list of 64 events, with a spacing of 60 bpm
+const BPM = 60
+const events: {
+    time: number;
+    callback: (reportedTime: number) => void;
+}[] = Array.from({ length: 4 * 16 }).map((_, i, arr) => ({
+  time: (i * (60 * 1000)) / BPM,
+  callback: (reportedTime: number) => {
+    const isLast = i === arr.length - 1
+    console.log(
+      isLast ? `Reached checkpoint ${reportedTime}` : "Reached the end of the song",
+    )
+  },
+}))
+
+const reportCheckpoint = (ms: number) => checkpoints.find(({time}) => time === ms)?.callback
+
+... 
+
+
+const {
+  isReady, // Wether the worker is ready to start playing
+  playState, // The state of the playback as reported by the worker
+  estimatedProgress, // The estimated progress, based on the last reported checkpoint
+  play,
+  pause,
+  stop,
+  setLooping,
+  setPlaybackProgress,
+} = usePlayback({
+  reportCheckpoint,
+  checkpoints: checkpoints.map(({time}) => time),
+  estimationUpdateInterval: 100, // How often to update the estimated progress
+  debugLog: console.log, // For logging accuracy
+})
+```
+
+##### Arguments
+
+- `reportCheckpoint` is called whenever a checkpoint is reached.
+- `checkpoints` is a list of ms values, at which the worker will fire the
+  `reportCheckpoint` callback.
+- `estimationUpdateInterval` is how often the estimated progress will be updated. Defaults
+  to never (always same as `playState.progress`).
+- `debugLog` is a function that will log some data on the inaccuracy of the timer. Turned
+  off by default.
+
+##### Return values
+
+- `isReady` is a boolean that is true when the worker is ready to start playing.
+- `playState` will update whenever a checkpoint is reached or a playback function is
+  called. It is an object with the following properties:
+  - `playing` is a boolean that is true when the worker is playing.
+  - `progress` is the progress of the playback, in ms.
+  - `looping` is a boolean that is true when the worker is looping.
+- `estimatedProgress` will update every `estimationUpdateInterval` milliseconds, and is
+  based on the last reported checkpoint. As this is calculated on the main thread, it
+  might be slightly off. I recommend using it for UI, but use the reported checkpoints for
+  logic.\
+  If you omit the `estimationUpdateInterval`, the estimated progress will be the same as
+  in playState.
+- `play`, `pause`, `stop`, `setLooping` and `setPlaybackProgress` are functions that
+  control the playback. They are self explanatory.
+
+Take a look at the full [example](www.todo.com) ([source](example/src/app/page.tsx)).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -138,16 +200,16 @@ Project Link:
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/repo_name/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/PetrosiliusPatter/use-worker-timer.svg?style=for-the-badge
+[contributors-url]: https://github.com/PetrosiliusPatter/use-worker-timer/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/PetrosiliusPatter/use-worker-timer.svg?style=for-the-badge
+[forks-url]: https://github.com/PetrosiliusPatter/use-worker-timer/network/members
+[stars-shield]: https://img.shields.io/github/stars/PetrosiliusPatter/use-worker-timer.svg?style=for-the-badge
+[stars-url]: https://github.com/PetrosiliusPatter/use-worker-timer/stargazers
+[issues-shield]: https://img.shields.io/github/issues/PetrosiliusPatter/use-worker-timer.svg?style=for-the-badge
+[issues-url]: https://github.com/PetrosiliusPatter/use-worker-timer/issues
+[license-shield]: https://img.shields.io/github/license/PetrosiliusPatter/use-worker-timer.svg?style=for-the-badge
+[license-url]: https://github.com/PetrosiliusPatter/use-worker-timer/blob/main/LICENSE.txt
 [product-screenshot]: images/screenshot.png
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
