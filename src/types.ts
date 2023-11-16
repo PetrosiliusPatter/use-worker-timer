@@ -29,11 +29,9 @@ export type WorkerCallData = Values<
 
 // ------------  Browser Call Types  ------------
 export type BrowserCallTypings = {
-  "reachedCheckpoint": {
-    time: number
-    startTime: number
-  }
+  "reachedCheckpoint": number
   "reportPlayState": PlayState
+  "reportTime": number
 }
 export type BrowserCall = keyof BrowserCallTypings
 
@@ -42,3 +40,9 @@ export type BrowserCallData = Values<
     [Call in BrowserCall]: [Call, BrowserCallTypings[Call]]
   }
 >
+
+// ------------  Misc  ------------
+export type LagLog = {
+  value: number
+  at: number
+}

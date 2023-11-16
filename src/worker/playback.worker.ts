@@ -6,7 +6,7 @@ import type {
   PlayState,
   TypedCallParams,
   WorkerCallData,
-} from "./playback.worker.types.ts"
+} from "../types.ts"
 
 export const playbackWorker = () => {
   // -----------------  Utils  -----------------
@@ -33,24 +33,25 @@ export const playbackWorker = () => {
     if (!currentPlayState.playing) return
 
     const nextTime = timesToReport.find((time) =>
-      time >= (startTime ? Date.now() - startTime : 0) && time !== lastReportedProgress
+      time >= (startTime ? performance.now() - startTime : 0) &&
+      time !== lastReportedProgress
     )
     if (nextTime === undefined) {
       if (currentPlayState.looping) {
-        setPlayState({ progress: 0 }, true)
+        setPlayState({ progress: 0 })
         createNextTimeout()
       } else {
-        setPlayState({ progress: 0, playing: false }, true)
+        setPlayState({ progress: 0, playing: false })
       }
       return
     }
 
-    const newProgress = startTime ? Date.now() - startTime : 0
+    const newProgress = startTime ? performance.now() - startTime : 0
     setPlayState({ progress: newProgress }, false)
 
     timeoutId = setTimeout(() => {
       lastReportedProgress = nextTime
-      typedBrowserCall("reachedCheckpoint", { time: nextTime, startTime: startTime ?? 0 })
+      typedBrowserCall("reachedCheckpoint", nextTime)
       setPlayState({ progress: nextTime }, false)
       createNextTimeout()
     }, nextTime - newProgress)
@@ -60,7 +61,7 @@ export const playbackWorker = () => {
     let newProgress = newState.progress
     if (newProgress === undefined && startTime !== undefined) {
       newProgress = currentPlayState.playing
-        ? Date.now() - startTime
+        ? performance.now() - startTime
         : currentPlayState.progress
     }
 
@@ -71,7 +72,7 @@ export const playbackWorker = () => {
     }
 
     if (recalcStart) {
-      startTime = Date.now() - currentPlayState.progress
+      startTime = performance.now() - currentPlayState.progress
     }
     typedBrowserCall("reportPlayState", currentPlayState)
   }
@@ -98,4 +99,5 @@ export const playbackWorker = () => {
 
   // ------------  Init  ------------
   typedBrowserCall("reportPlayState", currentPlayState)
+  typedBrowserCall("reportTime", performance.now())
 }

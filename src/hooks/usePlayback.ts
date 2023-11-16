@@ -2,11 +2,12 @@ import { React } from "../deps.ts"
 import { playbackWorker } from "../worker/playback.worker.ts"
 import {
   BrowserCallData,
+  LagLog,
   PlayState,
   TypedCallParams,
   WorkerCall,
   WorkerCallTypings,
-} from "../worker/playback.worker.types.ts"
+} from "../types.ts"
 import { usePlaybackProgress } from "./usePlaybackProgress.ts"
 
 export type ReportedPlayState = {
@@ -51,7 +52,10 @@ export const usePlayback = (
     estimationUpdateInterval,
   )
 
-  const [controlStartTime, setControlStartTime] = React.useState<number>(0)
+  const [lagLog, setLagLog] = React.useState<{
+    completeLog: LagLog[]
+    lastLog: LagLog | undefined
+  }>({ completeLog: [], lastLog: undefined })
 
   // ------------  Worker  ------------
   React.useEffect(() => {
@@ -68,26 +72,27 @@ export const usePlayback = (
       const [eventCall, eventData] = event.data
       switch (eventCall) {
         case "reachedCheckpoint": {
-          const now = Date.now()
+          setLagLog((prev) => {
+            const lastReachedCheckpoint = prev.lastLog
+            const now = performance.now()
 
-          if (debugLog) {
-            // At what time the main thread expected the checkpoint to be reached
-            const expectedTime = controlStartTime + eventData.time
-            // At what time the worker meant to reach the checkpoint
-            const workerAimedAt = eventData.startTime + eventData.time
-            // How much time the worker was off by
-            const error = now - workerAimedAt
-            // How much time the worker has been off by cumulatively
-            const accError = now - expectedTime
+            let error = 0
+            if (lastReachedCheckpoint && lastReachedCheckpoint.value <= eventData) {
+              const expectedTimeDelta = eventData - lastReachedCheckpoint.value
+              const actualTimeDelta = now - lastReachedCheckpoint.at
 
-            // error and accError should be equal, as the worker tries to correct itself
-            debugLog(
-              `Reporting checkpoint ${eventData.time}, (error ${error}ms, accumulated error ${accError}ms)`,
-            )
-          }
+              error = actualTimeDelta - expectedTimeDelta
+            }
+            const newLog = { value: error, at: now }
 
-          const checkpoint = eventData.time
-          reportCheckpoint?.(checkpoint)
+            debugLog?.(`Reporting checkpoint ${eventData}, with a lag of ${error}ms.`)
+            return {
+              completeLog: [...prev.completeLog, newLog],
+              lastLog: { value: eventData, at: now },
+            }
+          })
+
+          reportCheckpoint?.(eventData)
           break
         }
         case "reportPlayState":
@@ -100,12 +105,17 @@ export const usePlayback = (
     return () => {
       workerRef.current?.removeEventListener("message", onMessage)
     }
-  }, [reportCheckpoint, controlStartTime])
+  }, [reportCheckpoint])
 
   React.useEffect(() => {
     if (!workerRef.current) return
     typedWorkerCall(workerRef.current, "setCheckpoints", checkpoints)
   }, [checkpoints, workerRef.current])
+
+  const clearLastLog = React.useCallback(
+    () => setLagLog((prev) => ({ completeLog: prev.completeLog, lastLog: undefined })),
+    [],
+  )
 
   // ------------  Controls  ------------
   const play = React.useCallback(() => {
@@ -114,8 +124,8 @@ export const usePlayback = (
       playing: true,
       progress: newProgress,
     })
-    setControlStartTime(Date.now() - newProgress)
-  }, [reportedPlayState?.state.progress])
+    clearLastLog()
+  }, [reportedPlayState?.state.progress, clearLastLog])
   const pause = React.useCallback(() => {
     typedWorkerCall(workerRef.current, "setPlayState", {
       playing: false,
@@ -126,20 +136,22 @@ export const usePlayback = (
       playing: false,
       progress: 0,
     })
-  }, [])
+    clearLastLog()
+  }, [clearLastLog])
   const setLooping = React.useCallback((looping: boolean) => {
     typedWorkerCall(workerRef.current, "setPlayState", { looping })
   }, [])
   const setPlaybackProgress = React.useCallback((progress: number) => {
     if (!workerRef.current) return
     typedWorkerCall(workerRef.current, "setPlayState", { progress })
-    setControlStartTime(Date.now() - progress)
-  }, [])
+    clearLastLog()
+  }, [clearLastLog])
 
   return {
     isReady,
     playState: reportedPlayState?.state,
     estimatedProgress: estimatedProgress,
+    lagLog,
     play,
     pause,
     stop,

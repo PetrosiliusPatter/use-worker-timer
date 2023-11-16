@@ -4,6 +4,7 @@ import {useCallback, useEffect, useMemo, useState} from 'react'
 import {usePlayback} from 'use-worker-timer'
 import {DemoWrapper, ProgressContainer, ProgressSlider} from './styles'
 import {formatMs} from './utils'
+import {LagGraph} from './components/LogGraph/LogGraph'
 
 const App = () => {
   // ------- Sound -------
@@ -17,7 +18,7 @@ const App = () => {
 
   const checkpoints = useMemo(
     () =>
-      Array.from({length: 4 * 16}).map((_, i, arr) => ({
+      Array.from({length: 4 * 8}).map((_, i, arr) => ({
         time: (i * (60 * 1000)) / 60, // 60 bpm
         callback: (reportedTime: number) => {
           const isLast = i === arr.length - 1
@@ -46,6 +47,7 @@ const App = () => {
     isReady,
     playState,
     estimatedProgress,
+    lagLog,
     play,
     pause,
     stop,
@@ -70,6 +72,11 @@ const App = () => {
       estimated: formatMs(estimatedProgress ?? 0),
     }),
     [estimatedProgress, playState?.progress]
+  )
+
+  const trimmedLog = useMemo(
+    () => lagLog.completeLog.slice(-checkpoints.length),
+    [checkpoints.length, lagLog.completeLog]
   )
 
   // ------- Render -------
@@ -97,6 +104,7 @@ const App = () => {
           <span>Estimated progress: {progressLabels?.estimated}</span>
         )}
       </ProgressContainer>
+      <LagGraph data={trimmedLog} />
     </DemoWrapper>
   )
 }
