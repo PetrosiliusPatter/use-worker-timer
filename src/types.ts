@@ -40,9 +40,3 @@ export type BrowserCallData = Values<
     [Call in BrowserCall]: [Call, BrowserCallTypings[Call]]
   }
 >
-
-// ------------  Misc  ------------
-export type LagLog = {
-  value: number
-  at: number
-}

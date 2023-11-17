@@ -1,13 +1,12 @@
 import { React } from "../deps.ts"
-import { playbackWorker } from "../worker/playback.worker.ts"
 import {
   BrowserCallData,
-  LagLog,
   PlayState,
   TypedCallParams,
   WorkerCall,
   WorkerCallTypings,
 } from "../types.ts"
+import { playbackWorker } from "../worker/playback.worker.ts"
 import { usePlaybackProgress } from "./usePlaybackProgress.ts"
 
 export type ReportedPlayState = {
@@ -53,8 +52,11 @@ export const usePlayback = (
   )
 
   const [lagLog, setLagLog] = React.useState<{
-    completeLog: LagLog[]
-    lastLog: LagLog | undefined
+    completeLog: number[]
+    lastLog?: {
+      value: number
+      at: number
+    }
   }>({ completeLog: [], lastLog: undefined })
 
   // ------------  Worker  ------------
@@ -75,19 +77,17 @@ export const usePlayback = (
           setLagLog((prev) => {
             const lastReachedCheckpoint = prev.lastLog
             const now = performance.now()
-
             let error = 0
+
             if (lastReachedCheckpoint && lastReachedCheckpoint.value <= eventData) {
               const expectedTimeDelta = eventData - lastReachedCheckpoint.value
               const actualTimeDelta = now - lastReachedCheckpoint.at
-
               error = actualTimeDelta - expectedTimeDelta
             }
-            const newLog = { value: error, at: now }
 
             debugLog?.(`Reporting checkpoint ${eventData}, with a lag of ${error}ms.`)
             return {
-              completeLog: [...prev.completeLog, newLog],
+              completeLog: [...prev.completeLog, error],
               lastLog: { value: eventData, at: now },
             }
           })
@@ -95,9 +95,10 @@ export const usePlayback = (
           reportCheckpoint?.(eventData)
           break
         }
-        case "reportPlayState":
+        case "reportPlayState": {
           setReportedPlayState({ state: eventData, reportedAt: new Date() })
           break
+        }
       }
     }
 
@@ -150,7 +151,7 @@ export const usePlayback = (
   return {
     isReady,
     playState: reportedPlayState?.state,
-    estimatedProgress: estimatedProgress,
+    estimatedProgress,
     lagLog,
     play,
     pause,

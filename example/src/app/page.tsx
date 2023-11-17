@@ -6,41 +6,17 @@ import {DemoWrapper, ProgressContainer, ProgressSlider} from './styles'
 import {formatMs} from './utils'
 import {LagGraph} from './components/LogGraph/LogGraph'
 
+const checkpoints = Array.from({length: 4 * 8}).map(
+  (_, i) => (i * (60 * 1000)) / 60
+) // 8 bars at 60bpm
+const endTime = Math.max(...checkpoints)
+
 const App = () => {
   // ------- Sound -------
-  const [soundEffect, setSoundEffect] = useState<HTMLAudioElement | undefined>(
-    undefined
-  )
+  const [soundEffect, setSoundEffect] = useState<HTMLAudioElement>()
+  useEffect(() => setSoundEffect(new Audio('./snare.wav')), [])
 
-  useEffect(() => {
-    setSoundEffect(new Audio('./snare.wav'))
-  }, [])
-
-  const checkpoints = useMemo(
-    () =>
-      Array.from({length: 4 * 8}).map((_, i, arr) => ({
-        time: (i * (60 * 1000)) / 60, // 60 bpm
-        callback: (reportedTime: number) => {
-          const isLast = i === arr.length - 1
-          if (isLast) {
-            console.log('Reached the end of the song')
-            return
-          }
-          soundEffect?.play()
-        },
-      })),
-    [soundEffect]
-  )
-
-  const endTime = useMemo(
-    () => Math.max(...checkpoints.map(({time}) => time)),
-    [checkpoints]
-  )
-
-  const reportCheckpoint = useCallback(
-    (ms: number) => checkpoints.find(({time}) => time === ms)?.callback(ms),
-    [checkpoints]
-  )
+  const reportCheckpoint = useCallback(() => soundEffect?.play(), [soundEffect])
 
   // ------- Playback Controls -------
   const {
@@ -55,7 +31,7 @@ const App = () => {
     setPlaybackProgress,
   } = usePlayback({
     reportCheckpoint,
-    checkpoints: checkpoints.map(({time}) => time),
+    checkpoints,
     estimationUpdateInterval: 100,
     debugLog: console.log,
   })
@@ -76,13 +52,13 @@ const App = () => {
 
   const trimmedLog = useMemo(
     () => lagLog.completeLog.slice(-checkpoints.length),
-    [checkpoints.length, lagLog.completeLog]
+    [lagLog.completeLog]
   )
 
   // ------- Render -------
   return (
     <DemoWrapper>
-      <span>Worker is {isReady ? '' : 'not'} ready</span>
+      <span>Worker is {!isReady && 'not'} ready</span>
       <button onClick={play}>play</button>
       <button onClick={pause}>pause</button>
       <button onClick={stop}>stop</button>

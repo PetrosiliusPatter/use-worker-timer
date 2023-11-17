@@ -47,7 +47,8 @@ export const playbackWorker = () => {
     }
 
     const newProgress = startTime ? performance.now() - startTime : 0
-    setPlayState({ progress: newProgress }, false)
+
+    setPlayState({ progress: newProgress }, false, false)
 
     timeoutId = setTimeout(() => {
       lastReportedProgress = nextTime
@@ -57,23 +58,25 @@ export const playbackWorker = () => {
     }, nextTime - newProgress)
   }
 
-  const setPlayState = (newState: Partial<PlayState>, recalcStart = true) => {
-    let newProgress = newState.progress
-    if (newProgress === undefined && startTime !== undefined) {
-      newProgress = currentPlayState.playing
-        ? performance.now() - startTime
-        : currentPlayState.progress
-    }
+  const setPlayState = (
+    newState: Partial<PlayState>,
+    recalcStart = true,
+    reportToMain = true,
+  ) => {
+    const newProgress = newState.progress ??
+      (startTime ? performance.now() - startTime : 0)
 
     currentPlayState = {
       ...currentPlayState,
       ...newState,
-      progress: newProgress ?? 0,
+      progress: newProgress,
     }
 
     if (recalcStart) {
       startTime = performance.now() - currentPlayState.progress
     }
+
+    if (!reportToMain) return
     typedBrowserCall("reportPlayState", currentPlayState)
   }
 

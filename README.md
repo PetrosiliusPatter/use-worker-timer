@@ -19,7 +19,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/github_username/repo_name">
-    <img src="assets/icon.svg" alt="Logo" width="80" height="80">
+    <img src="assets/icon.png" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">use-worker-timer</h3>
@@ -111,38 +111,32 @@ control the playback, as well as the current state of the playback.
 ```ts
 // Creates a list of 64 events, with a spacing of 60 bpm
 const BPM = 60
-const events: {
-    time: number;
-    callback: (reportedTime: number) => void;
-}[] = Array.from({ length: 4 * 16 }).map((_, i, arr) => ({
-  time: (i * (60 * 1000)) / BPM,
-  callback: (reportedTime: number) => {
-    const isLast = i === arr.length - 1
-    console.log(
-      isLast ? `Reached checkpoint ${reportedTime}` : "Reached the end of the song",
-    )
-  },
-}))
+const checkpoints = Array.from({ length: 4 * 16 }).map((_, i) => (i * (60 * 1000)) / BPM)
 
-const reportCheckpoint = (ms: number) => checkpoints.find(({time}) => time === ms)?.callback
+const callbackForTime = (ms: number) => {
+  const isLast = i === events.length - 1
+  console.log(
+    isLast ? `Reached checkpoint ${reportedTime}` : "Reached the end of the song",
+  )
+}
 
 ... 
-
 
 const {
   isReady, // Wether the worker is ready to start playing
   playState, // The state of the playback as reported by the worker
   estimatedProgress, // The estimated progress, based on the last reported checkpoint
+  lagLog, // A log of the inaccuracy of the timer
   play,
   pause,
   stop,
   setLooping,
   setPlaybackProgress,
 } = usePlayback({
-  reportCheckpoint,
-  checkpoints: checkpoints.map(({time}) => time),
+  reportCheckpoint: callbackForTime,
+  checkpoints: checkpoints,
   estimationUpdateInterval: 100, // How often to update the estimated progress
-  debugLog: console.log, // For logging accuracy
+  debugLog: console.log, // A function to log the inaccuracy of the timer
 })
 ```
 
@@ -170,8 +164,10 @@ const {
   logic.\
   If you omit the `estimationUpdateInterval`, the estimated progress will be the same as
   in playState.
+- `lagLog` is an array of numbers, that represent the inaccuracy of the timer. It will be
+  filled with the inaccuracy per checkpoint, in ms, whenever a checkpoint is reached.
 - `play`, `pause`, `stop`, `setLooping` and `setPlaybackProgress` are functions that
-  control the playback. They are self explanatory.
+  control the playback. Self explanatory.
 
 Take a look at the full [example](www.todo.com) ([source](example/src/app/page.tsx)).
 
