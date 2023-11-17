@@ -17,7 +17,6 @@ export type PlayState = {
 export type WorkerCallTypings = {
   ["setCheckpoints"]: number[]
   ["setPlayState"]: Partial<PlayState>
-  ["requestPlayState"]: undefined
 }
 export type WorkerCall = keyof WorkerCallTypings
 

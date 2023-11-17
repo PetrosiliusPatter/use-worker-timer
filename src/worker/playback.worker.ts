@@ -27,13 +27,19 @@ export const playbackWorker = () => {
     progress: 0,
   }
 
+  const calcCurrentProgress = () => {
+    if (startTime === undefined) return 0
+    return performance.now() - startTime
+  }
+
   // ------------  Logic  ------------
   const createNextTimeout = () => {
     if (timeoutId !== undefined) clearTimeout(timeoutId)
     if (!currentPlayState.playing) return
 
+    const currProg = calcCurrentProgress()
     const nextTime = timesToReport.find((time) =>
-      time >= (startTime ? performance.now() - startTime : 0) &&
+      time >= currProg &&
       time !== lastReportedProgress
     )
     if (nextTime === undefined) {
@@ -46,14 +52,13 @@ export const playbackWorker = () => {
       return
     }
 
-    const newProgress = startTime ? performance.now() - startTime : 0
-
+    const newProgress = calcCurrentProgress()
     setPlayState({ progress: newProgress }, false, false)
 
     timeoutId = setTimeout(() => {
       lastReportedProgress = nextTime
       typedBrowserCall("reachedCheckpoint", nextTime)
-      setPlayState({ progress: nextTime }, false)
+      setPlayState({ progress: nextTime }, false, false)
       createNextTimeout()
     }, nextTime - newProgress)
   }
@@ -63,8 +68,7 @@ export const playbackWorker = () => {
     recalcStart = true,
     reportToMain = true,
   ) => {
-    const newProgress = newState.progress ??
-      (startTime ? performance.now() - startTime : 0)
+    const newProgress = newState.progress ?? calcCurrentProgress()
 
     currentPlayState = {
       ...currentPlayState,
@@ -93,9 +97,6 @@ export const playbackWorker = () => {
           lastReportedProgress = undefined
         }
         createNextTimeout()
-        break
-      case "requestPlayState":
-        typedBrowserCall("reportPlayState", currentPlayState)
         break
     }
   })

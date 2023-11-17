@@ -33,7 +33,6 @@ const App = () => {
     reportCheckpoint,
     checkpoints,
     estimationUpdateInterval: 100,
-    debugLog: console.log,
   })
 
   const toggleLooping = useCallback(() => {

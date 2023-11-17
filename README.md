@@ -9,8 +9,6 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 
-[![Contributors][contributors-shield]][contributors-url]\
-[![Forks][forks-shield]][forks-url]\
 [![Stargazers][stars-shield]][stars-url]\
 [![Issues][issues-shield]][issues-url]\
 [![MIT License][license-shield]][license-url]
@@ -136,7 +134,6 @@ const {
   reportCheckpoint: callbackForTime,
   checkpoints: checkpoints,
   estimationUpdateInterval: 100, // How often to update the estimated progress
-  debugLog: console.log, // A function to log the inaccuracy of the timer
 })
 ```
 
@@ -146,9 +143,8 @@ const {
 - `checkpoints` is a list of ms values, at which the worker will fire the
   `reportCheckpoint` callback.
 - `estimationUpdateInterval` is how often the estimated progress will be updated. Defaults
-  to never (always same as `playState.progress`).
-- `debugLog` is a function that will log some data on the inaccuracy of the timer. Turned
-  off by default.
+  to never (always same as `playState.progress`). If omitted, the estimated progress will
+  be the same as in playState.
 
 ##### Return values
 
@@ -161,9 +157,7 @@ const {
 - `estimatedProgress` will update every `estimationUpdateInterval` milliseconds, and is
   based on the last reported checkpoint. As this is calculated on the main thread, it
   might be slightly off. I recommend using it for UI, but use the reported checkpoints for
-  logic.\
-  If you omit the `estimationUpdateInterval`, the estimated progress will be the same as
-  in playState.
+  logic.
 - `lagLog` is an array of numbers, that represent the inaccuracy of the timer. It will be
   filled with the inaccuracy per checkpoint, in ms, whenever a checkpoint is reached.
 - `play`, `pause`, `stop`, `setLooping` and `setPlaybackProgress` are functions that
@@ -196,19 +190,12 @@ Project Link:
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[contributors-shield]: https://img.shields.io/github/contributors/PetrosiliusPatter/use-worker-timer.svg?style=for-the-badge
-[contributors-url]: https://github.com/PetrosiliusPatter/use-worker-timer/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/PetrosiliusPatter/use-worker-timer.svg?style=for-the-badge
-[forks-url]: https://github.com/PetrosiliusPatter/use-worker-timer/network/members
 [stars-shield]: https://img.shields.io/github/stars/PetrosiliusPatter/use-worker-timer.svg?style=for-the-badge
 [stars-url]: https://github.com/PetrosiliusPatter/use-worker-timer/stargazers
 [issues-shield]: https://img.shields.io/github/issues/PetrosiliusPatter/use-worker-timer.svg?style=for-the-badge
 [issues-url]: https://github.com/PetrosiliusPatter/use-worker-timer/issues
 [license-shield]: https://img.shields.io/github/license/PetrosiliusPatter/use-worker-timer.svg?style=for-the-badge
 [license-url]: https://github.com/PetrosiliusPatter/use-worker-timer/blob/main/LICENSE.txt
-[product-screenshot]: images/screenshot.png
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
 [React.js]: https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB
 [React-url]: https://reactjs.org/
 [Deno]: https://img.shields.io/badge/deno%20js-000000?style=for-the-badge&logo=deno&logoColor=white

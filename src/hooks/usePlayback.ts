@@ -29,10 +29,9 @@ type Props = {
   estimationUpdateInterval?: number
   reportCheckpoint?: (time: number) => void
   checkpoints: number[]
-  debugLog?: (message: string) => void
 }
 export const usePlayback = (
-  { estimationUpdateInterval, checkpoints, reportCheckpoint, debugLog }: Props,
+  { estimationUpdateInterval, checkpoints, reportCheckpoint }: Props,
 ) => {
   // ------------  State  ------------
   const workerRef = React.useRef<Worker>()
@@ -85,7 +84,6 @@ export const usePlayback = (
               error = actualTimeDelta - expectedTimeDelta
             }
 
-            debugLog?.(`Reporting checkpoint ${eventData}, with a lag of ${error}ms.`)
             return {
               completeLog: [...prev.completeLog, error],
               lastLog: { value: eventData, at: now },
