@@ -25,7 +25,7 @@
 <p align="center">
     Accurate timer for the frontend!
     <br />
-    <a href="https://github.com/PetrosiliusPatter/use-worker-timer"><strong>View Demo »</strong></a>
+    <a href="https://petrosiliuspatter.github.io/use-worker-timer/"><strong>View Demo »</strong></a>
     <br />
     <br />
     <a href="https://github.com/PetrosiliusPatter/use-worker-timer/issues">Report Bug</a>
