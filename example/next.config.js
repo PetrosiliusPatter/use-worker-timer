@@ -1,7 +1,6 @@
 // @ts-check
 
-const basePath =
-  process.env.NODE_ENV === 'production' ? '/worker-timer-pagetest' : ''
+const basePath = process.env.NODE_ENV === "production" ? "/use-worker-timer" : ""
 
 /**
  * @type {import('next').NextConfig}
@@ -19,7 +18,7 @@ const nextConfig = {
    *
    * @see https://nextjs.org/docs/pages/building-your-application/deploying/static-exports
    */
-  output: 'export',
+  output: "export",
 
   /**
    * Set base path. This is usually the slug of your repository.
