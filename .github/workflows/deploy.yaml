@@ -25,11 +25,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Set env
-        run: git describe --tags --match="v[0-9].[0-9].[0-9]" HEAD >> $GITHUB_ENV
       # System Setup
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Set env
+        run: git describe --tags --match="v[0-9].[0-9].[0-9]" HEAD >> $GITHUB_ENV
       - name: Debug 🐛
         run: ls -la && pwd
       - name: Setup Node
