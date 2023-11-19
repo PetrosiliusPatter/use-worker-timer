@@ -112,10 +112,10 @@ const BPM = 60
 const checkpoints = Array.from({ length: 4 * 16 }).map((_, i) => (i * (60 * 1000)) / BPM)
 
 const callbackForTime = (ms: number) => {
-  const isLast = i === events.length - 1
-  console.log(
-    isLast ? `Reached checkpoint ${reportedTime}` : "Reached the end of the song",
-  )
+  console.log(`Reached checkpoint ${reportedTime}`)
+  if(i === events.length - 1){
+    console.log("Reached the end!")
+  }
 }
 
 ... 
