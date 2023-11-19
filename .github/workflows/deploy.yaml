@@ -1,9 +1,9 @@
 name: useWorkerTimer deploy
 
 on:
-  # Runs on pushes targeting the default branch
+  # Runs on pushes targeting the example-deployment branch
   push:
-    branch: "example-deployment"
+    branches: ["example-deployment"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
