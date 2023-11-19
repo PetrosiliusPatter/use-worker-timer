@@ -3,7 +3,7 @@ import {useCallback, useEffect, useMemo, useState} from 'react'
 
 import {usePlayback} from 'use-worker-timer'
 import {DemoWrapper, ProgressContainer, ProgressSlider} from './styles'
-import {formatMs} from './utils'
+import {formatMs, urlWithBasePath} from './utils'
 import {LagGraph} from './components/LogGraph/LogGraph'
 
 const checkpoints = Array.from({length: 4 * 8}).map(
@@ -14,7 +14,7 @@ const endTime = Math.max(...checkpoints)
 const App = () => {
   // ------- Sound -------
   const [soundEffect, setSoundEffect] = useState<HTMLAudioElement>()
-  useEffect(() => setSoundEffect(new Audio('./snare.wav')), [])
+  useEffect(() => setSoundEffect(new Audio(urlWithBasePath('/snare.wav'))), [])
 
   const reportCheckpoint = useCallback(() => soundEffect?.play(), [soundEffect])
 

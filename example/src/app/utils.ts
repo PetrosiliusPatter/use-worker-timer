@@ -8,3 +8,6 @@ export const formatMs = (ms: number) => {
   ).padStart(3, '0')}`
   return out
 }
+
+export const urlWithBasePath = (url: string) =>
+  `${process.env.DB_HOST ?? '.'}/${url}`

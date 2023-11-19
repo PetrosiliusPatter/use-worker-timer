@@ -29,6 +29,7 @@ export const playbackWorker = () => {
 
   const calcCurrentProgress = () => {
     if (startTime === undefined) return 0
+    if (!currentPlayState.playing) return currentPlayState.progress
     return performance.now() - startTime
   }
 
@@ -58,7 +59,7 @@ export const playbackWorker = () => {
     timeoutId = setTimeout(() => {
       lastReportedProgress = nextTime
       typedBrowserCall("reachedCheckpoint", nextTime)
-      setPlayState({ progress: nextTime }, false, false)
+      setPlayState({ progress: nextTime }, false)
       createNextTimeout()
     }, nextTime - newProgress)
   }
