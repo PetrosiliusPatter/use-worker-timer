@@ -1,4 +1,4 @@
-name: useWorkerTimer deploy
+name: deploy the useWorkerTimer example
 
 on:
   # Runs on pushes targeting the example-deployment branch

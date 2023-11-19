@@ -73,9 +73,9 @@ export const usePlayback = (
       const [eventCall, eventData] = event.data
       switch (eventCall) {
         case "reachedCheckpoint": {
+          const now = performance.now()
           setLagLog((prev) => {
             const lastReachedCheckpoint = prev.lastLog
-            const now = performance.now()
             let error = 0
 
             if (lastReachedCheckpoint && lastReachedCheckpoint.value <= eventData) {

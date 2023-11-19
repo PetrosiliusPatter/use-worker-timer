@@ -22,6 +22,8 @@ ChartJS.register(
   Legend
 )
 
+const minBoundary = 30
+
 type Props = {
   data: number[]
 }
@@ -55,8 +57,8 @@ export const LagGraph = ({data}: Props) => {
       },
       scales: {
         y: {
-          min: Math.min(-25, min),
-          max: Math.max(25, max),
+          min: Math.min(-minBoundary, min),
+          max: Math.max(minBoundary, max),
           title: {
             text: 'Lag in ms',
             display: true,
