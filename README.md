@@ -23,7 +23,7 @@
 <h3 align="center">use-worker-timer</h3>
 
 <p align="center">
-    Accurate timer for the frontend!
+    Accurate timers for React!
     <br />
     <a href="https://petrosiliuspatter.github.io/use-worker-timer/"><strong>View Demo »</strong></a>
     <br />
@@ -61,17 +61,25 @@
 
 ## About The Project
 
-Scheduling events in the browser is a pain. The `setTimeout` and `setInterval` functions
-are not accurate and can be delayed by other tasks running on the main thread. If you
-switch tabs, resize the window, they become even more inaccurate. This is especially
-noticable, if events are scheduled to fire in sequence, as the delay will accumulate.
+Scheduling events in the browser can be challenging. Timeouts you set may be delayed by
+other tasks running on the main thread. Switching tabs or resizing the window can further
+impact accuracy, as the main thread gets throttled by the browser. This becomes especially
+noticeable when events are scheduled to fire in sequence, as the delay will accumulate.
 
-This library uses a web worker to schedule events on a separate thread, allowing for more
-accurate timing. You define a list of checkpoints, and the worker will fire an event
-whenever one is reached.
+In contrast, web workers run on a separate thread in the background, independent of
+intensive computations on the main thread, and are not throttled by the browser. However,
+they are notoriously challenging to use since the only way to communicate with them is
+through messages sent between the threads.
 
-This package also offers functions to control the playback of these checkpoints, such as
-playing, pausing, stopping, jumping to a specific checkpoint, and even looping.
+This package aims to address this issue by providing a convenient React hook for
+scheduling events in a web worker, while abstracting away some of the complexities of
+working with them directly.
+
+To use the hook, you define a list of checkpoints and a callback that is called whenever a
+checkpoint is reached. It returns a set of functions to control the playback of these
+checkpoints, including playing, pausing, navigating to a specific point in the playback,
+and looping. Additionally, it provides the current state of the playback and an estimated
+progress based on the elapsed time since the last reported checkpoint.
 
 #### Built With
 
