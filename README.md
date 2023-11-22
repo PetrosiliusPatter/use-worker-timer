@@ -97,7 +97,9 @@ progress based on the elapsed time since the last reported checkpoint.
 
 #### Deno
 
-1. TODO
+```ts
+import { usePlayback } from "https://deno.land/x/use_worker_timer/index.ts"
+```
 
 #### NPM
 
