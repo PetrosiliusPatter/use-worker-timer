@@ -10,7 +10,7 @@ if (!version) {
 }
 
 await build({
-  entryPoints: ["./src/index.ts"],
+  entryPoints: ["./index.ts"],
   outDir,
   shims: {
     deno: false,
