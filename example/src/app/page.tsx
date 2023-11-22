@@ -90,7 +90,7 @@ const App = () => {
         For this demo, the worker will play a snare sound every second while logging the
         time lag between schedule and execution.
         <br />
-        It's important to note that attaining perfect accuracy in JavaScript remains
+        It is important to note that attaining perfect accuracy in JavaScript remains
         challenging due to inherent language limitations. While threading-related
         inaccuracies have been mitigated, overall timing precision is still influenced by
         platform and browser performance characteristics. Therefore, the timer may still
