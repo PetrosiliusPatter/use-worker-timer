@@ -10,8 +10,7 @@
 -->
 
 [![Stargazers][stars-shield]][stars-url]\
-[![Issues][issues-shield]][issues-url]\
-[![MIT License][license-shield]][license-url]
+[![Issues][issues-shield]][issues-url]
 
 <!-- PROJECT LOGO -->
 <br />
@@ -179,8 +178,7 @@ Take a look at the full [example](www.todo.com) ([source](example/src/app/page.t
 
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information (hehe not added
-yet).
+Licensed under no license, do whatever you want with this, why would I care.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
