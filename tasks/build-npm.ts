@@ -46,4 +46,5 @@ await build({
   },
 })
 
+// Copies the readme
 await Deno.copyFile("README.md", `${outDir}/README.md`)
