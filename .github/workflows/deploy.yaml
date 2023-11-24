@@ -22,6 +22,7 @@ concurrency:
 
 jobs:
   # Build job
+  if: "!contains(github.ref, 'refs/tags/')"
   build:
     runs-on: ubuntu-latest
     steps:
@@ -79,7 +80,7 @@ jobs:
   # Publish job
   publish:
     needs: build
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    if: "contains(github.ref, 'refs/tags/')"
     runs-on: ubuntu-latest
     steps:
       - name: Download build artifact
