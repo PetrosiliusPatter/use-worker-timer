@@ -47,7 +47,8 @@ jobs:
         run: npm ci
         with: 
           working-directory: build/npm
-      - run: npm publish
+      - name: Publish
+        run: npm publish
         with: 
           working-directory: build/npm
         env:
