@@ -1,0 +1,54 @@
+name: publish the useWorkerTimer package to npm
+
+on:
+  # Runs on pushes targeting the example-deployment branch
+  push:
+    tags:
+      - v[0-9]*\.[0-9]*\.[0-9]*
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # System Setup
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 50
+          fetch-tags: true
+      - name: Set env
+        run: echo "RELEASE_VERSION=`git describe --tags --abbrev=0 --match="v[0-9]*\.[0-9]*\.[0-9]*" HEAD  | cut -c 2-`" >> $GITHUB_ENV
+      - name: Debug 🐛
+        run: ls -la && pwd
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: vx.x.x
+      # Build  
+      - name: Build package
+        run: deno run -A tasks/build-npm.ts $RELEASE_VERSION
+
+  # Publish job
+  publish:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Setup Node (in build folder)
+        uses: actions/setup-node@v3
+        with: 
+          working-directory: build/npm
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Run CI
+        run: npm ci
+        with: 
+          working-directory: build/npm
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_SECRET }}
+        with: 
+          working-directory: build/npm
