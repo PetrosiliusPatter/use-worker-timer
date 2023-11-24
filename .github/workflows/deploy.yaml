@@ -18,11 +18,10 @@ permissions:
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   # Build job
-  if: "!contains(github.ref, 'refs/tags/')"
   build:
     runs-on: ubuntu-latest
     steps:
@@ -68,6 +67,7 @@ jobs:
   # Deployment job
   deploy:
     needs: build
+    if: "!contains(github.ref, 'refs/tags/')"
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
