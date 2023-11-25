@@ -1,9 +1,13 @@
-name: deploy the useWorkerTimer example to GitHub Pages
+name: Deploy example
 
 on:
   # Runs on pushes targeting the main branch
   push:
     branches: ["main"]
+    paths:
+      - 'example/**'
+      - 'src/**'
+      - 'index.ts'
       
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -18,7 +22,7 @@ permissions:
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   # Build job
@@ -29,12 +33,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch-depth: 50
           fetch-tags: true
       - name: Set env
-        run: echo "RELEASE_VERSION=`git describe --tags --abbrev=0 --match="v[0-9]*\.[0-9]*\.[0-9]*" HEAD  | cut -c 2-`" >> $GITHUB_ENV
-      - name: Debug 🐛
-        run: ls -la && pwd
+        run: echo "RELEASE_VERSION=`git describe --tags --abbrev=0 --match="v[0-9]*\.[0-9]*\.[0-9]*" HEAD  | cut -c 2-`-dev" >> $GITHUB_ENV
       - name: Setup Node
         uses: actions/setup-node@v3
         with: 
@@ -63,15 +64,6 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           path: ./example/out
-
-  # Deployment job
-  deploy:
-    needs: build
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2

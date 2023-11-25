@@ -1,13 +1,12 @@
-name: publish the useWorkerTimer package
+name: Publish package
 
 on:
-  # Runs on tag pushes
-  push:
-    tags:
-      - v[0-9]*\.[0-9]*\.[0-9]*
-      
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: New Version
+        required: true
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -16,32 +15,30 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Build job
+  # Build Job
   build:
     runs-on: ubuntu-latest
     steps:
       # System Setup
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set env
-        run: echo "RELEASE_VERSION=`git describe --tags --abbrev=0 --match="v[0-9]*\.[0-9]*\.[0-9]*" HEAD  | cut -c 2-`" >> $GITHUB_ENV
-      - name: Debug 🐛
-        run: ls -la && pwd
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
           deno-version: vx.x.x
       # Build  
       - name: Build package
-        run: deno run -A tasks/build-npm.ts $RELEASE_VERSION
+        run: deno run -A tasks/build-npm.ts ${{ inputs.version }}
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: built-package
           path: build/npm
-
-  # Publish job
-  publish:
+  
+  # Publish Job
+  publish-npm:
+    permissions:
+      contents: write
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -50,7 +47,7 @@ jobs:
         with:
           name: built-package
           path: build/npm
-      # Deploy
+      # Publish to NPM
       - name: Run CI
         run: npm ci
         working-directory: build/npm
@@ -59,3 +56,14 @@ jobs:
         working-directory: build/npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_SECRET }}
+      # Create tag for release (also publishes to deno)
+      - name: Tag commit
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ inputs.version }}',
+              sha: context.sha
+            })
