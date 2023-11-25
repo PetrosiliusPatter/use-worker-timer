@@ -103,7 +103,13 @@ import { usePlayback } from "https://deno.land/x/use_worker_timer/index.ts"
 
 #### NPM
 
-1. TODO
+```
+npm install use-worker-timer
+```
+
+```ts
+import { usePlayback } from "use-worker-timer"
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
