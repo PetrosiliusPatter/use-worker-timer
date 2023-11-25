@@ -3,6 +3,7 @@ import { build, emptyDir } from "https://deno.land/x/dnt@0.38.1/mod.ts"
 const outDir = "./build/npm"
 
 await emptyDir(outDir)
+await emptyDir(outDir + "/assets")
 
 const [version] = Deno.args
 if (!version) {
@@ -48,3 +49,4 @@ await build({
 
 // Copies the readme
 await Deno.copyFile("README.md", `${outDir}/README.md`)
+await Deno.copyFile("assets/icon.png", `${outDir}/assets/icon.png`)
