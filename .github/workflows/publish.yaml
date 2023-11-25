@@ -1,23 +1,18 @@
-name: deploy the useWorkerTimer example to GitHub Pages
+name: publish the useWorkerTimer package
 
 on:
-  # Runs on pushes targeting the main branch
+  # Runs on tag pushes
   push:
-    branches: ["main"]
+    tags:
+      - v[0-9]*\.[0-9]*\.[0-9]*
       
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "pages"
+  group: "publish"
   cancel-in-progress: false
 
 jobs:
@@ -28,23 +23,14 @@ jobs:
       # System Setup
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 50
-          fetch-tags: true
       - name: Set env
         run: echo "RELEASE_VERSION=`git describe --tags --abbrev=0 --match="v[0-9]*\.[0-9]*\.[0-9]*" HEAD  | cut -c 2-`" >> $GITHUB_ENV
       - name: Debug 🐛
         run: ls -la && pwd
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with: 
-          working-directory: example
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
           deno-version: vx.x.x
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
       # Build  
       - name: Build package
         run: deno run -A tasks/build-npm.ts $RELEASE_VERSION
@@ -53,25 +39,23 @@ jobs:
         with:
           name: built-package
           path: build/npm
-      - name: Install dependencies
-        run: npm install
-        working-directory: example
-      - name: Build with Next.js
-        run: npm run build
-        working-directory: example
-      - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: ./example/out
 
-  # Deployment job
-  deploy:
+  # Publish job
+  publish:
     needs: build
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: built-package
+          path: build/npm
+      # Deploy
+      - name: Run CI
+        run: npm ci
+        working-directory: build/npm
+      - name: Publish
+        run: npm publish
+        working-directory: build/npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_SECRET }}
