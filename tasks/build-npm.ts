@@ -22,6 +22,13 @@ await build({
     sourceMap: true,
     lib: ["ES2021", "DOM"],
   },
+  mappings: {
+    "https://esm.sh/react@18.2.0": {
+      name: "react",
+      version: "^18.2.0",
+      peerDependency: true,
+    },
+  },
   package: {
     // package.json properties
     name: "use-worker-timer",
@@ -33,16 +40,17 @@ await build({
     author: "PetrosiliusPatter",
     repository: {
       type: "git",
-      url: "git+https://github.com/PetrosiliusPatter/WebMidiWorker.git",
+      url: "git+https://github.com/PetrosiliusPatter/use-worker-timer.git",
     },
     bugs: {
-      url: "https://github.com/PetrosiliusPatter/WebMidiWorker/issues",
+      url: "https://github.com/PetrosiliusPatter/use-worker-timer/issues",
     },
     engines: {
       node: ">= 14",
     },
     devDependencies: {
       "@types/react": "18.2.0",
+      "react": "18.2.0",
     },
   },
 })
