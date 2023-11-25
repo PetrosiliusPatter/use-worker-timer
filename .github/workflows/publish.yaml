@@ -51,6 +51,8 @@ jobs:
       - name: Run CI
         run: npm ci
         working-directory: build/npm
+      - name: Debug
+        run: echo ${{ secrets.NPM_PUBLISH_SECRET }}
       - name: Publish
         run: npm publish
         working-directory: build/npm
